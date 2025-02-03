@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MBC AI</title>
+</head>
+<body>
+<h1>AI 테스트</h1>
+
+<form method="post" enctype="multipart/form-data" id="fileUploadForm">
+  데이터 : <input type="text" name="message" value="test hello">
+  <p></p>
+  파일 : <input type="file" name="file">
+  <p></p>
+  이미지 URL : <input type="text" name="imageUrl" placeholder="이미지 URL">
+  <p></p>
+  <p></p>
+  <input type="button" value=" 비동기 요청 ">
+</form>
+<div id="result">여기에 요청 결과가 출력되어야 합니다.</div>
+<a href="ai">실시간 스트리밍</a>
+<script type="text/javascript">
+  const button = document.querySelector("input[type=button]");
+
+  button.addEventListener("click", function () {
+    const form = document.getElementById("fileUploadForm");
+    const form_data = new FormData(form);
+    button.disabled = true;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", "http://localhost:80/java_service", true);
+
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {  // 상태코드 200대면 작동
+        const response = JSON.parse(xhr.responseText);  // JSON파싱
+        const resultDiv = document.getElementById("result");  // id가 result인거
+        resultDiv.innerHTML = response.message + "<br>";  // 메세지에 줄바꿈
+        const img_src = "data:image/png;base64," + response.image;  // 이미지소스경로 변수생성
+        const img = document.createElement("img");  // img라는 요소 생성
+        img.src = img_src;  // 이미지 소스는 아까 만든 경로변수
+        resultDiv.appendChild(img); // 결과창 끝에 img 추가함
+        button.disabled = false;  // 버튼 활성화
+      } else {  // 상태코드 200대가 아니면
+        console.error("ERROR: " + xhr.statusText);  // 상태코드와 콘솔 에러 출력
+        alert("fail " + xhr.statusText);  // alert
+        button.disabled = false;  // 버튼 비활성화
+      }
+    }
+
+    xhr.onerror = function () {
+      console.error("ERROR: " + xhr.statusText);
+      alert("fail " + xhr.statusText);
+      button.disabled = false;
+    }
+
+    xhr.send(form_data);
+  })
+</script>
+</body>
+</html>
